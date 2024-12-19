@@ -53,8 +53,7 @@
             0% { top: -10px; }
             100% { top: 100%; }
         }
-        
-        /* Snowflakes effects */
+
         .snowflake:nth-child(odd) {
             animation-duration: 8s;
         }
@@ -62,13 +61,31 @@
         .snowflake:nth-child(even) {
             animation-duration: 12s;
         }
+
+        .btn-replay {
+            background-color: #ff6347;
+            color: white;
+            font-size: 1.2em;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn-replay:hover {
+            background-color: #ff4500;
+        }
     </style>
 </head>
 <body>
     <h1 class="title">Mini Jeu de Noël 🎄</h1>
-    
+
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎅</div>
+
+    <button id="replayBtn" class="btn-replay" onclick="restartGame()">Rejouer</button>
 
     <!-- Flocons de neige -->
     <div class="snowflake" style="left: 10%;">❄️</div>
@@ -82,15 +99,15 @@
         const ctx = canvas.getContext("2d");
 
         const player = {
-            width: 30,
-            height: 30,
-            x: canvas.width / 2 - 15,
-            y: canvas.height - 40,
-            speed: 5
+            width: 50,
+            height: 50,
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            speed: 10
         };
 
-        const obstacles = [];
-        const obstacleSpeed = 2;
+        const gifts = [];
+        let score = 0;
         let gameOver = false;
 
         // Contrôle du joueur avec les touches fléchées
@@ -103,28 +120,42 @@
             }
         });
 
-        function createObstacle() {
-            const x = Math.random() * (canvas.width - 30);
-            obstacles.push({ x: x, y: -30, width: 30, height: 30 });
+        function createGift() {
+            const x = Math.random() * (canvas.width - 50);
+            gifts.push({ x: x, y: -50, width: 50, height: 50 });
         }
 
-        function moveObstacles() {
-            for (let i = 0; i < obstacles.length; i++) {
-                obstacles[i].y += obstacleSpeed;
+        function moveGifts() {
+            for (let i = 0; i < gifts.length; i++) {
+                gifts[i].y += 3;
             }
         }
 
         function detectCollision() {
-            for (let i = 0; i < obstacles.length; i++) {
-                const o = obstacles[i];
-                if (o.y + o.height > player.y &&
-                    o.y < player.y + player.height &&
-                    o.x + o.width > player.x &&
-                    o.x < player.x + player.width) {
+            for (let i = 0; i < gifts.length; i++) {
+                const g = gifts[i];
+                // Si un cadeau est attrapé
+                if (g.y + g.height > player.y &&
+                    g.y < player.y + player.height &&
+                    g.x + g.width > player.x &&
+                    g.x < player.x + player.width) {
+                    score++;
+                    gifts.splice(i, 1);
+                    i--;
+                }
+                // Si un cadeau tombe au sol
+                if (g.y > canvas.height) {
                     gameOver = true;
                     document.getElementById("gameOver").style.display = "block";
+                    document.getElementById("replayBtn").style.display = "block";
                 }
             }
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 30);
         }
 
         function update() {
@@ -133,34 +164,38 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Afficher le joueur
-            ctx.fillStyle = "#32CD32";  // Vert Noël
+            ctx.fillStyle = "#32CD32"; // Vert Noël
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
-            // Créer et déplacer les obstacles
+            // Créer des cadeaux aléatoires
             if (Math.random() < 0.02) {
-                createObstacle();
+                createGift();
             }
-            moveObstacles();
+            moveGifts();
 
-            // Afficher les obstacles
-            ctx.fillStyle = "#FF4500";  // Rouge Noël
-            for (let i = 0; i < obstacles.length; i++) {
-                const o = obstacles[i];
-                ctx.fillRect(o.x, o.y, o.width, o.height);
+            // Afficher les cadeaux
+            ctx.fillStyle = "#FFD700"; // Or, pour les cadeaux
+            for (let i = 0; i < gifts.length; i++) {
+                const g = gifts[i];
+                ctx.fillRect(g.x, g.y, g.width, g.height);
             }
 
             // Détection des collisions
             detectCollision();
 
-            // Supprimer les obstacles sortis de l'écran
-            for (let i = 0; i < obstacles.length; i++) {
-                if (obstacles[i].y > canvas.height) {
-                    obstacles.splice(i, 1);
-                    i--;
-                }
-            }
+            // Afficher le score
+            drawScore();
 
             requestAnimationFrame(update);
+        }
+
+        function restartGame() {
+            score = 0;
+            gameOver = false;
+            gifts.length = 0;
+            document.getElementById("gameOver").style.display = "none";
+            document.getElementById("replayBtn").style.display = "none";
+            update();
         }
 
         update(); // Commencer le jeu
