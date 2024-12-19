@@ -111,7 +111,7 @@
             width: 40,
             height: 40,
             x: canvas.width / 2 - 20,
-            y: canvas.height - 50,
+            y: canvas.height - 50,  // Position initiale du joueur
             speed: 5,
             dx: 0,
             dy: 0,
@@ -124,11 +124,19 @@
         let score = 0;
         let gameOver = false;
 
-        // Générer des plateformes
+        // Créer une plateforme initiale sous le joueur
+        function createInitialPlatform() {
+            platforms.push({ x: canvas.width / 2 - 50, y: canvas.height - 100, width: 100, height: 20 });
+        }
+
+        // Générer une nouvelle plateforme à une position aléatoire
         function createPlatform(y) {
             const x = Math.random() * (canvas.width - 100);
             platforms.push({ x: x, y: y, width: 100, height: 20 });
         }
+
+        // Appeler cette fonction pour ajouter une plateforme initiale
+        createInitialPlatform();
 
         // Détecter les collisions avec les plateformes
         function detectPlatformCollision() {
@@ -184,12 +192,13 @@
             }
         });
 
-        // Dessiner les éléments
+        // Dessiner le joueur
         function drawPlayer() {
             ctx.fillStyle = "#32CD32"; // Couleur verte pour le joueur
             ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
+        // Dessiner les plateformes
         function drawPlatforms() {
             for (let i = 0; i < platforms.length; i++) {
                 const p = platforms[i];
@@ -198,12 +207,14 @@
             }
         }
 
+        // Dessiner le score
         function drawScore() {
             ctx.fillStyle = "white";
             ctx.font = "20px Arial";
             ctx.fillText("Score: " + score, 10, 30);
         }
 
+        // Démarrer le jeu
         function update() {
             if (gameOver) return;
 
@@ -236,12 +247,13 @@
             player.y = canvas.height - 50;
             player.dy = 0;
             platforms.length = 0;
+            createInitialPlatform();
             document.getElementById("gameOver").style.display = "none";
             document.getElementById("replayBtn").style.display = "none";
             update();
         }
 
-        update(); // Démarrer le jeu
+        update();  // Démarrer le jeu
     </script>
 </body>
 </html>
