@@ -3,32 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Jeu</title>
+    <title>Mini Jeu - Thème Noël</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
+            background-color: #2E8B57;
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); /* Fond bois */
+            color: white;
+            text-align: center;
         }
+
         #gameCanvas {
             background-color: #333;
             display: block;
-            margin: 0 auto;
+            margin: 20px auto;
+            border: 5px solid #fff;
+            border-radius: 10px;
         }
+
         .game-over {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+
+        .title {
             font-size: 2em;
-            color: white;
+            color: #ff6347;
+            margin-top: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            font-size: 1.5em;
+            color: #ffffff;
+            animation: snow 10s linear infinite;
+        }
+
+        @keyframes snow {
+            0% { top: -10px; }
+            100% { top: 100%; }
+        }
+        
+        /* Snowflakes effects */
+        .snowflake:nth-child(odd) {
+            animation-duration: 8s;
+        }
+
+        .snowflake:nth-child(even) {
+            animation-duration: 12s;
         }
     </style>
 </head>
 <body>
+    <h1 class="title">Mini Jeu de Noël 🎄</h1>
+    
     <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎮</div>
+    <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎅</div>
+
+    <!-- Flocons de neige -->
+    <div class="snowflake" style="left: 10%;">❄️</div>
+    <div class="snowflake" style="left: 25%;">❄️</div>
+    <div class="snowflake" style="left: 50%;">❄️</div>
+    <div class="snowflake" style="left: 75%;">❄️</div>
+    <div class="snowflake" style="left: 90%;">❄️</div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -39,7 +86,7 @@
             height: 30,
             x: canvas.width / 2 - 15,
             y: canvas.height - 40,
-            speed: 10
+            speed: 5
         };
 
         const obstacles = [];
@@ -86,7 +133,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Afficher le joueur
-            ctx.fillStyle = "green";
+            ctx.fillStyle = "#32CD32";  // Vert Noël
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
             // Créer et déplacer les obstacles
@@ -96,7 +143,7 @@
             moveObstacles();
 
             // Afficher les obstacles
-            ctx.fillStyle = "red";
+            ctx.fillStyle = "#FF4500";  // Rouge Noël
             for (let i = 0; i < obstacles.length; i++) {
                 const o = obstacles[i];
                 ctx.fillRect(o.x, o.y, o.width, o.height);
@@ -120,3 +167,4 @@
     </script>
 </body>
 </html>
+
