@@ -3,42 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Jeu - Noël : Sauter sur les plateformes</title>
+    <title>Jeu de Noël : Puzzle 🎄</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #2E8B57;
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
             color: white;
             text-align: center;
         }
 
-        #gameCanvas {
-            background-color: #333;
-            display: block;
-            margin: 20px auto;
+        #gameContainer {
+            display: inline-block;
+            position: relative;
             border: 5px solid #fff;
             border-radius: 10px;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #333;
         }
 
-        .game-over {
+        #gameCanvas {
+            background-color: #fff;
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        .piece {
+            width: 100px;
+            height: 100px;
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3em;
-            color: #ff0000;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            cursor: pointer;
+            border: 2px solid #000;
+            background-size: cover;
+            transition: all 0.3s ease;
         }
 
-        .title {
-            font-size: 2em;
+        .message {
+            font-size: 1.5em;
             color: #ff6347;
             margin-top: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+            display: none;
         }
 
         .btn-replay {
@@ -55,15 +62,6 @@
 
         .btn-replay:hover {
             background-color: #ff4500;
-        }
-
-        .platform {
-            position: absolute;
-            width: 100px;
-            height: 20px;
-            background-color: #8B4513; /* Couleur marron pour les plateformes */
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
         }
 
         .snowflake {
@@ -89,12 +87,13 @@
     </style>
 </head>
 <body>
-    <h1 class="title">Jeu de Noël : Sauter sur les plateformes 🎄</h1>
-
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎅</div>
-
-    <button id="replayBtn" class="btn-replay" onclick="restartGame()">Rejouer</button>
+    <h1>Jeu de Noël : Résous le puzzle et découvre ton indice ! 🎁</h1>
+    <div id="gameContainer">
+        <div id="gameCanvas"></div>
+    </div>
+    
+    <div class="message" id="message">Bravo ! Voici ton indice : "Il est caché sous l'arbre de Noël 🎄"</div>
+    <button id="replayBtn" class="btn-replay" onclick="startGame()">Rejouer</button>
 
     <!-- Flocons de neige -->
     <div class="snowflake" style="left: 10%;">❄️</div>
@@ -104,156 +103,112 @@
     <div class="snowflake" style="left: 90%;">❄️</div>
 
     <script>
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+        const canvas = document.getElementById('gameCanvas');
+        const message = document.getElementById('message');
+        const replayBtn = document.getElementById('replayBtn');
+        
+        const puzzlePieces = [];
+        let puzzleCompleted = false;
 
-        const player = {
-            width: 40,
-            height: 40,
-            x: canvas.width / 2 - 20,
-            y: canvas.height - 50,  // Position initiale du joueur
-            speed: 5,
-            dx: 0,
-            dy: 0,
-            gravity: 0.3,
-            jumpPower: -8,
-            onGround: false
+        // Positions initiales des pièces du puzzle
+        const positions = [
+            { x: 0, y: 0 },
+            { x: 100, y: 0 },
+            { x: 200, y: 0 },
+            { x: 0, y: 100 },
+            { x: 100, y: 100 },
+            { x: 200, y: 100 },
+            { x: 0, y: 200 },
+            { x: 100, y: 200 },
+            { x: 200, y: 200 }
+        ];
+
+        // Image du puzzle
+        const image = new Image();
+        image.src = 'https://www.w3schools.com/w3images/fjords.jpg'; // Change this URL to your puzzle image
+
+        image.onload = function() {
+            startGame();
         };
 
-        const platforms = [];
-        let score = 0;
-        let gameOver = false;
+        // Démarre le jeu
+        function startGame() {
+            puzzleCompleted = false;
+            puzzlePieces.length = 0;
+            canvas.innerHTML = ''; // Clear previous puzzle
 
-        // Créer une plateforme initiale sous le joueur
-        function createInitialPlatform() {
-            platforms.push({ x: canvas.width / 2 - 50, y: canvas.height - 100, width: 100, height: 20 });
+            for (let i = 0; i < positions.length; i++) {
+                const piece = document.createElement('div');
+                piece.classList.add('piece');
+                piece.style.backgroundImage = `url('${image.src}')`;
+                piece.style.backgroundPosition = `-${positions[i].x}px -${positions[i].y}px`;
+
+                piece.style.left = `${Math.random() * 200}px`;
+                piece.style.top = `${Math.random() * 200}px`;
+
+                piece.dataset.position = i;
+                piece.addEventListener('mousedown', onPieceMouseDown);
+
+                puzzlePieces.push(piece);
+                canvas.appendChild(piece);
+            }
+
+            message.style.display = 'none';
+            replayBtn.style.display = 'none';
         }
 
-        // Générer une nouvelle plateforme à une position aléatoire
-        function createPlatform(y) {
-            const x = Math.random() * (canvas.width - 100);
-            platforms.push({ x: x, y: y, width: 100, height: 20 });
+        // Logique de déplacement des pièces
+        let draggedPiece = null;
+        let offsetX, offsetY;
+
+        function onPieceMouseDown(e) {
+            if (puzzleCompleted) return;
+
+            draggedPiece = e.target;
+            offsetX = e.clientX - draggedPiece.getBoundingClientRect().left;
+            offsetY = e.clientY - draggedPiece.getBoundingClientRect().top;
+
+            document.addEventListener('mousemove', onPieceMouseMove);
+            document.addEventListener('mouseup', onPieceMouseUp);
         }
 
-        // Appeler cette fonction pour ajouter une plateforme initiale
-        createInitialPlatform();
+        function onPieceMouseMove(e) {
+            if (draggedPiece) {
+                draggedPiece.style.left = `${e.clientX - offsetX}px`;
+                draggedPiece.style.top = `${e.clientY - offsetY}px`;
+            }
+        }
 
-        // Détecter les collisions avec les plateformes
-        function detectPlatformCollision() {
-            player.onGround = false;
-            for (let i = 0; i < platforms.length; i++) {
-                const p = platforms[i];
-                if (player.x + player.width > p.x && player.x < p.x + p.width &&
-                    player.y + player.height > p.y && player.y + player.height < p.y + 5) {
-                    player.dy = 0;
-                    player.y = p.y - player.height;
-                    player.onGround = true;
-                    score++;
+        function onPieceMouseUp() {
+            if (draggedPiece) {
+                checkPuzzleCompletion();
+                document.removeEventListener('mousemove', onPieceMouseMove);
+                document.removeEventListener('mouseup', onPieceMouseUp);
+                draggedPiece = null;
+            }
+        }
+
+        // Vérifier si le puzzle est complet
+        function checkPuzzleCompletion() {
+            let correctPositionCount = 0;
+            
+            puzzlePieces.forEach(piece => {
+                const pos = positions[piece.dataset.position];
+                const pieceRect = piece.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+
+                if (Math.abs(pieceRect.left - (canvasRect.left + pos.x)) < 20 &&
+                    Math.abs(pieceRect.top - (canvasRect.top + pos.y)) < 20) {
+                    correctPositionCount++;
                 }
+            });
+
+            if (correctPositionCount === puzzlePieces.length) {
+                puzzleCompleted = true;
+                message.style.display = 'block';
+                replayBtn.style.display = 'inline-block';
             }
         }
-
-        // Déplacer le joueur
-        function movePlayer() {
-            if (player.onGround) {
-                player.dy = 0;
-            } else {
-                player.dy += player.gravity; // Effet de gravité
-            }
-
-            player.x += player.dx;
-            player.y += player.dy;
-
-            if (player.x < 0) player.x = 0;
-            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
-            if (player.y > canvas.height) {
-                gameOver = true;
-                document.getElementById("gameOver").style.display = "block";
-                document.getElementById("replayBtn").style.display = "block";
-            }
-        }
-
-        // Contrôles du joueur
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "ArrowLeft") {
-                player.dx = -player.speed;
-            }
-            if (event.key === "ArrowRight") {
-                player.dx = player.speed;
-            }
-            if (event.key === " " && player.onGround) {
-                player.dy = player.jumpPower;
-            }
-        });
-
-        document.addEventListener("keyup", function(event) {
-            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                player.dx = 0;
-            }
-        });
-
-        // Dessiner le joueur
-        function drawPlayer() {
-            ctx.fillStyle = "#32CD32"; // Couleur verte pour le joueur
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-        }
-
-        // Dessiner les plateformes
-        function drawPlatforms() {
-            for (let i = 0; i < platforms.length; i++) {
-                const p = platforms[i];
-                ctx.fillStyle = "#8B4513"; // Couleur marron pour les plateformes
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-            }
-        }
-
-        // Dessiner le score
-        function drawScore() {
-            ctx.fillStyle = "white";
-            ctx.font = "20px Arial";
-            ctx.fillText("Score: " + score, 10, 30);
-        }
-
-        // Démarrer le jeu
-        function update() {
-            if (gameOver) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Créer une nouvelle plateforme toutes les 1500ms (1.5s)
-            if (Math.random() < 0.02) {
-                createPlatform(Math.random() * canvas.height / 2 + 100);
-            }
-
-            // Déplacer le joueur
-            movePlayer();
-
-            // Détecter les collisions avec les plateformes
-            detectPlatformCollision();
-
-            // Dessiner le joueur, les plateformes et le score
-            drawPlayer();
-            drawPlatforms();
-            drawScore();
-
-            requestAnimationFrame(update);
-        }
-
-        // Recommencer le jeu
-        function restartGame() {
-            score = 0;
-            gameOver = false;
-            player.x = canvas.width / 2 - 20;
-            player.y = canvas.height - 50;
-            player.dy = 0;
-            platforms.length = 0;
-            createInitialPlatform();
-            document.getElementById("gameOver").style.display = "none";
-            document.getElementById("replayBtn").style.display = "none";
-            update();
-        }
-
-        update();  // Démarrer le jeu
     </script>
 </body>
 </html>
