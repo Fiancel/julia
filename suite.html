@@ -77,6 +77,31 @@
         .btn-replay:hover {
             background-color: #ff4500;
         }
+
+        .gift {
+            width: 50px;
+            height: 50px;
+            background-color: #ff1493;
+            border-radius: 5px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .gift::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 34px;
+            height: 34px;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body>
@@ -122,7 +147,13 @@
 
         function createGift() {
             const x = Math.random() * (canvas.width - 50);
-            gifts.push({ x: x, y: -50, width: 50, height: 50 });
+            const gift = {
+                x: x,
+                y: -50,
+                width: 50,
+                height: 50
+            };
+            gifts.push(gift);
         }
 
         function moveGifts() {
@@ -158,6 +189,19 @@
             ctx.fillText("Score: " + score, 10, 30);
         }
 
+        function drawGifts() {
+            gifts.forEach(gift => {
+                // Dessin d'un cadeau avec un effet visuel
+                ctx.fillStyle = "#ff1493"; // Couleur du cadeau
+                ctx.fillRect(gift.x, gift.y, gift.width, gift.height);
+
+                // Dessin du ruban sur le cadeau
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 3;
+                ctx.strokeRect(gift.x + 8, gift.y + 8, gift.width - 16, gift.height - 16);
+            });
+        }
+
         function update() {
             if (gameOver) return;
 
@@ -167,18 +211,14 @@
             ctx.fillStyle = "#32CD32"; // Vert Noël
             ctx.fillRect(player.x, player.y, player.width, player.height);
 
-            // Créer des cadeaux aléatoires
-            if (Math.random() < 0.02) {
+            // Créer des cadeaux avec une probabilité réduite
+            if (Math.random() < 0.015) {
                 createGift();
             }
             moveGifts();
 
-            // Afficher les cadeaux
-            ctx.fillStyle = "#FFD700"; // Or, pour les cadeaux
-            for (let i = 0; i < gifts.length; i++) {
-                const g = gifts[i];
-                ctx.fillRect(g.x, g.y, g.width, g.height);
-            }
+            // Dessiner les cadeaux
+            drawGifts();
 
             // Détection des collisions
             detectCollision();
@@ -202,4 +242,3 @@
     </script>
 </body>
 </html>
-
