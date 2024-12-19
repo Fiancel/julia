@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Jeu - Thème Noël</title>
+    <title>Mini Jeu - Noël : Sauter sur les plateformes</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             background-color: #2E8B57;
-            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png'); /* Fond bois */
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
             color: white;
             text-align: center;
         }
@@ -41,6 +41,31 @@
             text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
 
+        .btn-replay {
+            background-color: #ff6347;
+            color: white;
+            font-size: 1.2em;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .btn-replay:hover {
+            background-color: #ff4500;
+        }
+
+        .platform {
+            position: absolute;
+            width: 100px;
+            height: 20px;
+            background-color: #8B4513; /* Couleur marron pour les plateformes */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+        }
+
         .snowflake {
             position: absolute;
             top: -10px;
@@ -61,51 +86,10 @@
         .snowflake:nth-child(even) {
             animation-duration: 12s;
         }
-
-        .btn-replay {
-            background-color: #ff6347;
-            color: white;
-            font-size: 1.2em;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .btn-replay:hover {
-            background-color: #ff4500;
-        }
-
-        .gift {
-            width: 50px;
-            height: 50px;
-            background-color: #ff1493;
-            border-radius: 5px;
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .gift::before {
-            content: '';
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 34px;
-            height: 34px;
-            border: 2px solid white;
-            border-radius: 50%;
-        }
     </style>
 </head>
 <body>
-    <h1 class="title">Mini Jeu de Noël 🎄</h1>
+    <h1 class="title">Jeu de Noël : Sauter sur les plateformes 🎄</h1>
 
     <canvas id="gameCanvas" width="400" height="600"></canvas>
     <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎅</div>
@@ -124,62 +108,93 @@
         const ctx = canvas.getContext("2d");
 
         const player = {
-            width: 50,
-            height: 50,
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 60,
-            speed: 10
+            width: 40,
+            height: 40,
+            x: canvas.width / 2 - 20,
+            y: canvas.height - 50,
+            speed: 5,
+            dx: 0,
+            dy: 0,
+            gravity: 0.3,
+            jumpPower: -8,
+            onGround: false
         };
 
-        const gifts = [];
+        const platforms = [];
         let score = 0;
         let gameOver = false;
 
-        // Contrôle du joueur avec les touches fléchées
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "ArrowLeft" && player.x > 0) {
-                player.x -= player.speed;
+        // Générer des plateformes
+        function createPlatform(y) {
+            const x = Math.random() * (canvas.width - 100);
+            platforms.push({ x: x, y: y, width: 100, height: 20 });
+        }
+
+        // Détecter les collisions avec les plateformes
+        function detectPlatformCollision() {
+            player.onGround = false;
+            for (let i = 0; i < platforms.length; i++) {
+                const p = platforms[i];
+                if (player.x + player.width > p.x && player.x < p.x + p.width &&
+                    player.y + player.height > p.y && player.y + player.height < p.y + 5) {
+                    player.dy = 0;
+                    player.y = p.y - player.height;
+                    player.onGround = true;
+                    score++;
+                }
             }
-            if (event.key === "ArrowRight" && player.x < canvas.width - player.width) {
-                player.x += player.speed;
+        }
+
+        // Déplacer le joueur
+        function movePlayer() {
+            if (player.onGround) {
+                player.dy = 0;
+            } else {
+                player.dy += player.gravity; // Effet de gravité
+            }
+
+            player.x += player.dx;
+            player.y += player.dy;
+
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            if (player.y > canvas.height) {
+                gameOver = true;
+                document.getElementById("gameOver").style.display = "block";
+                document.getElementById("replayBtn").style.display = "block";
+            }
+        }
+
+        // Contrôles du joueur
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "ArrowLeft") {
+                player.dx = -player.speed;
+            }
+            if (event.key === "ArrowRight") {
+                player.dx = player.speed;
+            }
+            if (event.key === " " && player.onGround) {
+                player.dy = player.jumpPower;
             }
         });
 
-        function createGift() {
-            const x = Math.random() * (canvas.width - 50);
-            const gift = {
-                x: x,
-                y: -50,
-                width: 50,
-                height: 50
-            };
-            gifts.push(gift);
-        }
-
-        function moveGifts() {
-            for (let i = 0; i < gifts.length; i++) {
-                gifts[i].y += 3;
+        document.addEventListener("keyup", function(event) {
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+                player.dx = 0;
             }
+        });
+
+        // Dessiner les éléments
+        function drawPlayer() {
+            ctx.fillStyle = "#32CD32"; // Couleur verte pour le joueur
+            ctx.fillRect(player.x, player.y, player.width, player.height);
         }
 
-        function detectCollision() {
-            for (let i = 0; i < gifts.length; i++) {
-                const g = gifts[i];
-                // Si un cadeau est attrapé
-                if (g.y + g.height > player.y &&
-                    g.y < player.y + player.height &&
-                    g.x + g.width > player.x &&
-                    g.x < player.x + player.width) {
-                    score++;
-                    gifts.splice(i, 1);
-                    i--;
-                }
-                // Si un cadeau tombe au sol
-                if (g.y > canvas.height) {
-                    gameOver = true;
-                    document.getElementById("gameOver").style.display = "block";
-                    document.getElementById("replayBtn").style.display = "block";
-                }
+        function drawPlatforms() {
+            for (let i = 0; i < platforms.length; i++) {
+                const p = platforms[i];
+                ctx.fillStyle = "#8B4513"; // Couleur marron pour les plateformes
+                ctx.fillRect(p.x, p.y, p.width, p.height);
             }
         }
 
@@ -189,56 +204,44 @@
             ctx.fillText("Score: " + score, 10, 30);
         }
 
-        function drawGifts() {
-            gifts.forEach(gift => {
-                // Dessin d'un cadeau avec un effet visuel
-                ctx.fillStyle = "#ff1493"; // Couleur du cadeau
-                ctx.fillRect(gift.x, gift.y, gift.width, gift.height);
-
-                // Dessin du ruban sur le cadeau
-                ctx.strokeStyle = "white";
-                ctx.lineWidth = 3;
-                ctx.strokeRect(gift.x + 8, gift.y + 8, gift.width - 16, gift.height - 16);
-            });
-        }
-
         function update() {
             if (gameOver) return;
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Afficher le joueur
-            ctx.fillStyle = "#32CD32"; // Vert Noël
-            ctx.fillRect(player.x, player.y, player.width, player.height);
-
-            // Créer des cadeaux avec une probabilité réduite
-            if (Math.random() < 0.005) {
-                createGift();
+            // Créer une nouvelle plateforme toutes les 1500ms (1.5s)
+            if (Math.random() < 0.02) {
+                createPlatform(Math.random() * canvas.height / 2 + 100);
             }
-            moveGifts();
 
-            // Dessiner les cadeaux
-            drawGifts();
+            // Déplacer le joueur
+            movePlayer();
 
-            // Détection des collisions
-            detectCollision();
+            // Détecter les collisions avec les plateformes
+            detectPlatformCollision();
 
-            // Afficher le score
+            // Dessiner le joueur, les plateformes et le score
+            drawPlayer();
+            drawPlatforms();
             drawScore();
 
             requestAnimationFrame(update);
         }
 
+        // Recommencer le jeu
         function restartGame() {
             score = 0;
             gameOver = false;
-            gifts.length = 0;
+            player.x = canvas.width / 2 - 20;
+            player.y = canvas.height - 50;
+            player.dy = 0;
+            platforms.length = 0;
             document.getElementById("gameOver").style.display = "none";
             document.getElementById("replayBtn").style.display = "none";
             update();
         }
 
-        update(); // Commencer le jeu
+        update(); // Démarrer le jeu
     </script>
 </body>
 </html>
