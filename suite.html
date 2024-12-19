@@ -1,1 +1,64 @@
-ss
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Jeu</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .question {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .answer-buttons {
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .result {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mini Jeu 🎮</h1>
+        <p class="question">Quelle est la capitale de la France ?</p>
+
+        <div class="answer-buttons">
+            <button onclick="checkAnswer('Paris')">Paris</button>
+            <button onclick="checkAnswer('Lyon')">Lyon</button>
+            <button onclick="checkAnswer('Marseille')">Marseille</button>
+            <button onclick="checkAnswer('Nice')">Nice</button>
+        </div>
+
+        <p id="result" class="result"></p>
+    </div>
+
+    <script>
+        function checkAnswer(answer) {
+            const resultElement = document.getElementById('result');
+            
+            if (answer === 'Paris') {
+                resultElement.textContent = 'Bravo ! Tu as trouvé la bonne réponse 🎉';
+                resultElement.style.color = 'green';
+            } else {
+                resultElement.textContent = 'Dommage, ce n\'est pas la bonne réponse. Essaye encore !';
+                resultElement.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
