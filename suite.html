@@ -4,61 +4,119 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Jeu</title>
-    <link rel="stylesheet" href="styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
+            margin: 0;
+            padding: 0;
             background-color: #f0f0f0;
-            padding: 20px;
         }
-        .question {
-            font-size: 1.5em;
-            margin-bottom: 20px;
+        #gameCanvas {
+            background-color: #333;
+            display: block;
+            margin: 0 auto;
         }
-        .answer-buttons {
-            margin: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 1.2em;
-            margin: 5px;
-            cursor: pointer;
-        }
-        .result {
-            font-size: 1.5em;
-            margin-top: 20px;
-            color: green;
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Mini Jeu 🎮</h1>
-        <p class="question">Quelle est la capitale de la France ?</p>
-
-        <div class="answer-buttons">
-            <button onclick="checkAnswer('Paris')">Paris</button>
-            <button onclick="checkAnswer('Lyon')">Lyon</button>
-            <button onclick="checkAnswer('Marseille')">Marseille</button>
-            <button onclick="checkAnswer('Nice')">Nice</button>
-        </div>
-
-        <p id="result" class="result"></p>
-    </div>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="gameOver" class="game-over" style="display: none;">Game Over! 🎮</div>
 
     <script>
-        function checkAnswer(answer) {
-            const resultElement = document.getElementById('result');
-            
-            if (answer === 'Paris') {
-                resultElement.textContent = 'Bravo ! Tu as trouvé la bonne réponse 🎉';
-                resultElement.style.color = 'green';
-            } else {
-                resultElement.textContent = 'Dommage, ce n\'est pas la bonne réponse. Essaye encore !';
-                resultElement.style.color = 'red';
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const player = {
+            width: 30,
+            height: 30,
+            x: canvas.width / 2 - 15,
+            y: canvas.height - 40,
+            speed: 5
+        };
+
+        const obstacles = [];
+        const obstacleSpeed = 2;
+        let gameOver = false;
+
+        // Contrôle du joueur avec les touches fléchées
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "ArrowLeft" && player.x > 0) {
+                player.x -= player.speed;
+            }
+            if (event.key === "ArrowRight" && player.x < canvas.width - player.width) {
+                player.x += player.speed;
+            }
+        });
+
+        function createObstacle() {
+            const x = Math.random() * (canvas.width - 30);
+            obstacles.push({ x: x, y: -30, width: 30, height: 30 });
+        }
+
+        function moveObstacles() {
+            for (let i = 0; i < obstacles.length; i++) {
+                obstacles[i].y += obstacleSpeed;
             }
         }
+
+        function detectCollision() {
+            for (let i = 0; i < obstacles.length; i++) {
+                const o = obstacles[i];
+                if (o.y + o.height > player.y &&
+                    o.y < player.y + player.height &&
+                    o.x + o.width > player.x &&
+                    o.x < player.x + player.width) {
+                    gameOver = true;
+                    document.getElementById("gameOver").style.display = "block";
+                }
+            }
+        }
+
+        function update() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Afficher le joueur
+            ctx.fillStyle = "green";
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Créer et déplacer les obstacles
+            if (Math.random() < 0.02) {
+                createObstacle();
+            }
+            moveObstacles();
+
+            // Afficher les obstacles
+            ctx.fillStyle = "red";
+            for (let i = 0; i < obstacles.length; i++) {
+                const o = obstacles[i];
+                ctx.fillRect(o.x, o.y, o.width, o.height);
+            }
+
+            // Détection des collisions
+            detectCollision();
+
+            // Supprimer les obstacles sortis de l'écran
+            for (let i = 0; i < obstacles.length; i++) {
+                if (obstacles[i].y > canvas.height) {
+                    obstacles.splice(i, 1);
+                    i--;
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        update(); // Commencer le jeu
     </script>
 </body>
 </html>
