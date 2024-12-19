@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Félicitations !</title>
     <link rel="stylesheet" href="styles.css">
+        <script>
+        // Cette fonction va écouter la touche "n" et rediriger l'utilisateur
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "n") {
+                window.location.href = "suite.html"; // Remplace "nouvelle-page.html" par le lien de la page vers laquelle tu veux rediriger
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="container">
