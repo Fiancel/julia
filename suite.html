@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeu de Noël : Puzzle 🎄</title>
+    <title>Jeu de Noël : Trouve l'indice !</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -14,54 +14,44 @@
             text-align: center;
         }
 
-        #gameContainer {
-            display: inline-block;
-            position: relative;
-            border: 5px solid #fff;
-            border-radius: 10px;
-            padding: 10px;
+        h1 {
+            font-size: 2.5em;
+            color: #ff6347;
             margin-top: 20px;
-            background-color: #333;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
 
-        #gameCanvas {
-            background-color: #fff;
-            width: 300px;
-            height: 300px;
-            position: relative;
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+            padding: 20px;
         }
 
-        .piece {
+        .gift-box {
             width: 100px;
             height: 100px;
-            position: absolute;
+            background-color: #ff6347;
+            border-radius: 10px;
             cursor: pointer;
-            border: 2px solid #000;
-            background-size: cover;
-            transition: all 0.3s ease;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .gift-box img {
+            width: 50px;
+            height: 50px;
         }
 
         .message {
             font-size: 1.5em;
-            color: #ff6347;
+            color: #fff;
             margin-top: 20px;
             display: none;
-        }
-
-        .btn-replay {
-            background-color: #ff6347;
-            color: white;
-            font-size: 1.2em;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .btn-replay:hover {
-            background-color: #ff4500;
         }
 
         .snowflake {
@@ -87,15 +77,32 @@
     </style>
 </head>
 <body>
-    <h1>Jeu de Noël : Résous le puzzle et découvre ton indice ! 🎁</h1>
-    <div id="gameContainer">
-        <div id="gameCanvas"></div>
-    </div>
-    
-    <div class="message" id="message">Bravo ! Voici ton indice : "Il est caché sous l'arbre de Noël 🎄"</div>
-    <button id="replayBtn" class="btn-replay" onclick="startGame()">Rejouer</button>
 
-    <!-- Flocons de neige -->
+    <h1>Jeu de Noël : Trouve l'indice ! 🎁</h1>
+
+    <div class="container">
+        <div class="gift-box" id="gift1" onclick="revealHint('Cadeau 1')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+        <div class="gift-box" id="gift2" onclick="revealHint('Cadeau 2')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+        <div class="gift-box" id="gift3" onclick="revealHint('Cadeau 3')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+        <div class="gift-box" id="gift4" onclick="revealHint('Cadeau 4')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+        <div class="gift-box" id="gift5" onclick="revealHint('Cadeau 5')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+        <div class="gift-box" id="gift6" onclick="revealHint('Cadeau 6')">
+            <img src="https://img.icons8.com/ios/452/gift.png" alt="Cadeau">
+        </div>
+    </div>
+
+    <div class="message" id="message">Bravo ! L'indice pour ton cadeau : "Il est caché sous l'arbre de Noël 🎄"</div>
+
     <div class="snowflake" style="left: 10%;">❄️</div>
     <div class="snowflake" style="left: 25%;">❄️</div>
     <div class="snowflake" style="left: 50%;">❄️</div>
@@ -103,112 +110,27 @@
     <div class="snowflake" style="left: 90%;">❄️</div>
 
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const message = document.getElementById('message');
-        const replayBtn = document.getElementById('replayBtn');
-        
-        const puzzlePieces = [];
-        let puzzleCompleted = false;
+        function revealHint(gift) {
+            const message = document.getElementById('message');
+            const gifts = document.querySelectorAll('.gift-box');
+            let found = false;
 
-        // Positions initiales des pièces du puzzle
-        const positions = [
-            { x: 0, y: 0 },
-            { x: 100, y: 0 },
-            { x: 200, y: 0 },
-            { x: 0, y: 100 },
-            { x: 100, y: 100 },
-            { x: 200, y: 100 },
-            { x: 0, y: 200 },
-            { x: 100, y: 200 },
-            { x: 200, y: 200 }
-        ];
-
-        // Image du puzzle
-        const image = new Image();
-        image.src = 'https://www.w3schools.com/w3images/fjords.jpg'; // Change this URL to your puzzle image
-
-        image.onload = function() {
-            startGame();
-        };
-
-        // Démarre le jeu
-        function startGame() {
-            puzzleCompleted = false;
-            puzzlePieces.length = 0;
-            canvas.innerHTML = ''; // Clear previous puzzle
-
-            for (let i = 0; i < positions.length; i++) {
-                const piece = document.createElement('div');
-                piece.classList.add('piece');
-                piece.style.backgroundImage = `url('${image.src}')`;
-                piece.style.backgroundPosition = `-${positions[i].x}px -${positions[i].y}px`;
-
-                piece.style.left = `${Math.random() * 200}px`;
-                piece.style.top = `${Math.random() * 200}px`;
-
-                piece.dataset.position = i;
-                piece.addEventListener('mousedown', onPieceMouseDown);
-
-                puzzlePieces.push(piece);
-                canvas.appendChild(piece);
-            }
-
-            message.style.display = 'none';
-            replayBtn.style.display = 'none';
-        }
-
-        // Logique de déplacement des pièces
-        let draggedPiece = null;
-        let offsetX, offsetY;
-
-        function onPieceMouseDown(e) {
-            if (puzzleCompleted) return;
-
-            draggedPiece = e.target;
-            offsetX = e.clientX - draggedPiece.getBoundingClientRect().left;
-            offsetY = e.clientY - draggedPiece.getBoundingClientRect().top;
-
-            document.addEventListener('mousemove', onPieceMouseMove);
-            document.addEventListener('mouseup', onPieceMouseUp);
-        }
-
-        function onPieceMouseMove(e) {
-            if (draggedPiece) {
-                draggedPiece.style.left = `${e.clientX - offsetX}px`;
-                draggedPiece.style.top = `${e.clientY - offsetY}px`;
-            }
-        }
-
-        function onPieceMouseUp() {
-            if (draggedPiece) {
-                checkPuzzleCompletion();
-                document.removeEventListener('mousemove', onPieceMouseMove);
-                document.removeEventListener('mouseup', onPieceMouseUp);
-                draggedPiece = null;
-            }
-        }
-
-        // Vérifier si le puzzle est complet
-        function checkPuzzleCompletion() {
-            let correctPositionCount = 0;
-            
-            puzzlePieces.forEach(piece => {
-                const pos = positions[piece.dataset.position];
-                const pieceRect = piece.getBoundingClientRect();
-                const canvasRect = canvas.getBoundingClientRect();
-
-                if (Math.abs(pieceRect.left - (canvasRect.left + pos.x)) < 20 &&
-                    Math.abs(pieceRect.top - (canvasRect.top + pos.y)) < 20) {
-                    correctPositionCount++;
+            gifts.forEach(function(giftBox) {
+                if (giftBox.id === 'gift3') { // On cache l'indice dans "Cadeau 3"
+                    found = true;
+                    giftBox.style.backgroundColor = '#4CAF50'; // Change couleur pour signaler le cadeau trouvé
+                    giftBox.innerHTML = '<img src="https://img.icons8.com/ios/452/checkmark.png" alt="Indice trouvé">';
+                    message.style.display = 'block';
+                } else {
+                    giftBox.style.backgroundColor = '#ccc';
                 }
             });
 
-            if (correctPositionCount === puzzlePieces.length) {
-                puzzleCompleted = true;
-                message.style.display = 'block';
-                replayBtn.style.display = 'inline-block';
+            if (!found) {
+                alert("Ce n'est pas le bon cadeau. Essaie encore !");
             }
         }
     </script>
+
 </body>
 </html>
