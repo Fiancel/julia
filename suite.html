@@ -3,85 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chasse au trésor de Noël 🎁</title>
+    <title>julia</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #2E8B57;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2E8B57; /* Vert sapin */
             color: white;
-            text-align: center;
         }
 
-        h1 {
-            font-size: 2.5em;
-            color: #ff6347;
-            margin-top: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-        }
-
-        .image-container {
-            position: relative;
-            display: inline-block;
-            margin-top: 20px;
-        }
-
-        #image {
-            max-width: 100%;
-            height: auto;
-            border: 5px solid #fff;
-        }
-
-        .hidden-indicator {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            background-color: rgba(255, 0, 0, 0.5);
-            border-radius: 50%;
-            cursor: pointer;
-            display: none; /* Caché par défaut */
-        }
-
-        .message {
-            font-size: 1.5em;
-            color: #ff6347;
-            margin-top: 20px;
-            display: none; /* Caché par défaut */
+        img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 5px solid white;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-
-    <h1>Chasse au trésor de Noël 🎄</h1>
-    <p>Trouve l'indice caché pour découvrir ton cadeau !</p>
-
-    <div class="image-container">
-        <!-- Remplace l'image ci-dessous par l'URL de ton image -->
-        <img id="image" src="/mnt/data/A_magical_Christmas_scene_featuring_a_cozy_living_.png" alt="Scène de Noël">
-        <!-- Indicateurs cachés -->
-        <div class="hidden-indicator" id="indicator1" style="top: 40%; left: 30%;" onclick="revealMessage('Indice : Le cadeau est sous l’arbre ! 🎁')"></div>
-        <div class="hidden-indicator" id="indicator2" style="top: 70%; left: 60%;" onclick="revealMessage('Indice : Vérifie près de la cheminée ! 🔥')"></div>
-    </div>
-
-    <!-- Message révélé -->
-    <div class="message" id="message"></div>
-
-    <script>
-        // Affiche un message lorsque l'utilisateur clique sur l'indicateur caché
-        function revealMessage(text) {
-            const message = document.getElementById('message');
-            message.textContent = text;
-            message.style.display = 'block';
-        }
-
-        // Affiche les indicateurs pour les tests ou après un certain temps
-        window.onload = () => {
-            const indicators = document.querySelectorAll('.hidden-indicator');
-            indicators.forEach(indicator => {
-                indicator.style.display = 'block'; // À retirer pour le mode "invisible"
-            });
-        };
-    </script>
+    <img src="https://via.placeholder.com/800x600.png?text=Votre+Image+de+Noël" alt="Image de Noël">
 </body>
 </html>
+
